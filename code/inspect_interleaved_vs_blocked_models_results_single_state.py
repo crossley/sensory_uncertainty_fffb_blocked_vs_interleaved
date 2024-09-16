@@ -8,7 +8,11 @@ if __name__ == "__main__":
 
     d = d[d.group.isin([7, 8, 19])]
 
-    d["group_class"] = d["group"].map({7: "blocked", 8: "blocked", 19: "interleaved"})
+    d["group_class"] = d["group"].map({
+        7: "blocked",
+        8: "blocked",
+        19: "interleaved"
+    })
 
     d["group"] = d["group"].astype("category")
     d["sig_mpep_prev"] = d["sig_mpep_prev"].astype("category")
@@ -31,7 +35,8 @@ if __name__ == "__main__":
             subject = int(subject)
             group = int(group)
 
-            d_subject = dd[(dd["subject"] == subject) & (dd["group"] == group)].copy()
+            d_subject = dd[(dd["subject"] == subject)
+                           & (dd["group"] == group)].copy()
 
             if not d_subject.empty:
                 rot = d_subject.rot.to_numpy()
@@ -42,29 +47,28 @@ if __name__ == "__main__":
                 x_obs_ep = d_subject["ha_end"].to_numpy()
 
                 args = (rot, sig_mp, sig_ep, x_obs_mp, x_obs_ep)
-                params = np.loadtxt(os.path.join(froot, file), delimiter=",")[:-2]
+                params = np.loadtxt(os.path.join(froot, file),
+                                    delimiter=",")[:-2]
 
-                p_names = np.array(
-                    [
-                        "alpha_ff",
-                        "beta_ff",
-                        "bias_ff",
-                        "alpha_ff2",
-                        "beta_ff2",
-                        "bias_ff2",
-                        "alpha_fb",
-                        "beta_fb",
-                        "xfb_init",
-                        "gamma_fbint_1",
-                        "gamma_fbint_2",
-                        "gamma_fbint_3",
-                        "gamma_fbint_4",
-                        "gamma_ff_1",
-                        "gamma_ff_2",
-                        "gamma_ff_3",
-                        "gamma_ff_4",
-                    ]
-                )
+                p_names = np.array([
+                    "alpha_ff",
+                    "beta_ff",
+                    "bias_ff",
+                    "alpha_ff2",
+                    "beta_ff2",
+                    "bias_ff2",
+                    "alpha_fb",
+                    "beta_fb",
+                    "xfb_init",
+                    "gamma_fbint_1",
+                    "gamma_fbint_2",
+                    "gamma_fbint_3",
+                    "gamma_fbint_4",
+                    "gamma_ff_1",
+                    "gamma_ff_2",
+                    "gamma_ff_3",
+                    "gamma_ff_4",
+                ])
 
                 d_params = pd.DataFrame({"params": params, "p_names": p_names})
                 d_params["subject"] = np.unique(subject)[0]
@@ -90,15 +94,14 @@ if __name__ == "__main__":
     sim_func = model_context_1s.simulate
     for g in d_params.group.unique():
         for s in d_params[(d_params.group == g)].subject.unique():
-            params = d_params[(d_params.group == g) & (d_params.subject == s)].copy()
+            params = d_params[(d_params.group == g)
+                              & (d_params.subject == s)].copy()
             params = params.params.to_numpy()
 
-            sig_mp = d_subject[
-                (d_subject.group == g) & (d_subject.subject == s)
-            ].sig_mp.to_numpy()
-            sig_ep = d_subject[
-                (d_subject.group == g) & (d_subject.subject == s)
-            ].sig_ep.to_numpy()
+            sig_mp = d_subject[(d_subject.group == g)
+                               & (d_subject.subject == s)].sig_mp.to_numpy()
+            sig_ep = d_subject[(d_subject.group == g)
+                               & (d_subject.subject == s)].sig_ep.to_numpy()
             args = (rot, sig_mp, sig_ep)
 
             x_pred = sim_func(params, args)
@@ -116,33 +119,53 @@ if __name__ == "__main__":
     d_pred = d_pred[d_pred.trial < 200]
 
     d_pred["sig_mpep_prev"] = d_pred["group"]
-    d_pred["sig_mpep_prev"] = d_pred["sig_mpep_prev"].cat.rename_categories(
-        {7: "(1, 1)", 8: "(3, 3)"}
-    )
+    d_pred["sig_mpep_prev"] = d_pred["sig_mpep_prev"].cat.rename_categories({
+        7:
+        "(1, 1)",
+        8:
+        "(3, 3)"
+    })
 
     d_params["sig_mpep_prev"] = d_params["group"].astype("category")
-    d_params["sig_mpep_prev"] = d_params["sig_mpep_prev"].cat.rename_categories(
-        {7: "(1, 1)", 8: "(3, 3)"}
-    )
+    d_params["sig_mpep_prev"] = d_params[
+        "sig_mpep_prev"].cat.rename_categories({
+            7: "(1, 1)",
+            8: "(3, 3)"
+        })
 
+    d_pred["Sensory uncertainty on trial t-1"] = d_pred["group"].map({
+        7:
+        "Low Uncertainty",
+        8:
+        "High Uncertainty"
+    })
+
+    d_params["Sensory uncertainty on trial t-1"] = d_params["group"].map({
+        7:
+        "Low Uncertainty",
+        8:
+        "High Uncertainty"
+    })
+
+    sns.set_palette("colorblind")
     fig, ax = plt.subplots(1, 3, squeeze=False, figsize=(12, 4))
     sns.lineplot(
         data=d_pred,
         x="trial",
         y="ha_init",
-        hue="sig_mpep_prev",
-        palette=["C0", "C1"],
+        hue="Sensory uncertainty on trial t-1",
         markers=True,
         ax=ax[0, 0],
     )
+
     d_params_2 = d_params.copy()
     d_params_2 = d_params_2[[x in ["alpha_ff2"] for x in d_params_2.p_names]]
+
     sns.violinplot(
         data=d_params_2,
         x="p_names",
         y="params",
-        hue="sig_mpep_prev",
-        legend=False,
+        hue="Sensory uncertainty on trial t-1",
         ax=ax[0, 1],
     )
     d_params_2 = d_params.copy()
@@ -151,38 +174,32 @@ if __name__ == "__main__":
         data=d_params_2,
         x="p_names",
         y="params",
-        hue="sig_mpep_prev",
-        legend=False,
+        hue="Sensory uncertainty on trial t-1",
         ax=ax[0, 2],
     )
+    ax[0, 1].set_xticklabels(["$\\alpha$"])
+    ax[0, 2].set_xticklabels(["$\\beta$"])
     ax[0, 1].set_xlabel("")
     ax[0, 2].set_xlabel("")
     ax[0, 1].set_ylabel("Parameter Estimate (a.u.)")
     ax[0, 2].set_ylabel("Parameter Estimate (a.u.)")
     ax[0, 0].set_ylim([0, 12])
     plt.tight_layout()
-    # plt.savefig("../figures/fig_interleaved_vs_blocked_1s.pdf")
     plt.savefig("../figures/fig2.png")
-    plt.show()
+    plt.close()
 
     # NOTE: stats on parameter estimates
-    x = d_params[
-        (d_params.p_names == "alpha_ff2") & (d_params.group == 7)
-    ].params.to_numpy()
-    y = d_params[
-        (d_params.p_names == "alpha_ff2") & (d_params.group == 8)
-    ].params.to_numpy()
+    x = d_params[(d_params.p_names == "alpha_ff2")
+                 & (d_params.group == 7)].params.to_numpy()
+    y = d_params[(d_params.p_names == "alpha_ff2")
+                 & (d_params.group == 8)].params.to_numpy()
     res_alpha = pg.ttest(x, y, paired=True)
 
-    x = d_params[
-        (d_params.p_names == "beta_ff2") & (d_params.group == 7)
-    ].params.to_numpy()
-    y = d_params[
-        (d_params.p_names == "beta_ff2") & (d_params.group == 8)
-    ].params.to_numpy()
+    x = d_params[(d_params.p_names == "beta_ff2")
+                 & (d_params.group == 7)].params.to_numpy()
+    y = d_params[(d_params.p_names == "beta_ff2")
+                 & (d_params.group == 8)].params.to_numpy()
     res_beta = pg.ttest(x, y, paired=True)
 
     print(res_alpha)
     print(res_beta)
-
-    # TODO: fit single state models with constrained gamma

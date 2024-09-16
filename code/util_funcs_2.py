@@ -1,5 +1,6 @@
 from imports import *
 
+
 def load_all_data_grand():
     # d1 = pd.read_csv("../data/exp1_2020.csv")
     # d2 = pd.read_csv("../data/exp2_2020.csv")
@@ -15,12 +16,14 @@ def load_all_data_grand():
     # d1718 = pd.read_csv("../data/G17_18.csv")
     d1920 = pd.read_csv("../data/G19_20.csv")
 
-    d15["HA_INIT"] = d15["HA_INT"]
-    d15["HA_MID"] = d15["HA_INT"]
+    # d15["HA_INIT"] = d15["HA_INT"]
+    # d15["HA_MID"] = d15["HA_INT"]
 
-    d = pd.concat(
-        (d1, d2, d3, d4, d5, d6, d7, d8, d345, d15, d16, d1718, d1920), sort=False
-    )
+    # d = pd.concat(
+    #     (d1, d2, d3, d4, d5, d6, d7, d8, d345, d15, d16, d1718, d1920), sort=False
+    # )
+
+    d = pd.concat((d6, d1920), sort=False)
 
     d.columns = d.columns.str.lower()
     d.phase = [x.lower() for x in d.phase.to_numpy()]
