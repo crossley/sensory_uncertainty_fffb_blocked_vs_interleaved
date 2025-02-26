@@ -177,12 +177,14 @@ if __name__ == "__main__":
         hue="Sensory uncertainty on trial t-1",
         ax=ax[0, 2],
     )
-    ax[0, 1].set_xticklabels(["$\\alpha$"])
-    ax[0, 2].set_xticklabels(["$\\beta$"])
+    ax[0, 0].set_xlabel("Trial", fontsize=14)
+    ax[0, 0].set_ylabel("Initial Movement Vector", fontsize=14)
+    ax[0, 1].set_xticklabels(["$\\alpha$"], fontsize=14)
+    ax[0, 2].set_xticklabels(["$\\beta$"], fontsize=14)
     ax[0, 1].set_xlabel("")
     ax[0, 2].set_xlabel("")
-    ax[0, 1].set_ylabel("Parameter Estimate (a.u.)")
-    ax[0, 2].set_ylabel("Parameter Estimate (a.u.)")
+    ax[0, 1].set_ylabel("Parameter Estimate (a.u.)", fontsize=14)
+    ax[0, 2].set_ylabel("Parameter Estimate (a.u.)", fontsize=14)
     ax[0, 0].set_ylim([0, 12])
     plt.tight_layout()
     plt.savefig("../figures/fig2.png")
